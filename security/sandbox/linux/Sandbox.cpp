@@ -512,6 +512,8 @@ static const Array<const char*, 1> kLibsThatWillCrash{
 
 void SandboxEarlyInit(Maybe<UniqueFileHandle>&& aSandboxReporter,
                       Maybe<UniqueFileHandle>&& aChrootClient) {
+  SandboxInfo::Init();
+
   if (!aSandboxReporter) {
     return;
   }

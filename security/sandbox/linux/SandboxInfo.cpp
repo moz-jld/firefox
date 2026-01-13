@@ -185,9 +185,11 @@ static bool CanCreateUserNamespace() {
 }
 
 /* static */
-MOZ_RUNINIT const SandboxInfo SandboxInfo::sSingleton = SandboxInfo();
+SandboxInfo SandboxInfo::sSingleton = {};
 
-SandboxInfo::SandboxInfo() {
+void SandboxInfo::InitThis() {
+  MOZ_ASSERT(!mInited);
+
   int flags = 0;
   static_assert(sizeof(flags) >= sizeof(Flags), "enum Flags fits in an int");
 
@@ -225,6 +227,7 @@ SandboxInfo::SandboxInfo() {
   }
 
   mFlags = static_cast<Flags>(flags);
+  mInited = true;
 }
 
 }  // namespace mozilla

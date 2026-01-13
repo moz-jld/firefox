@@ -7,6 +7,7 @@
 #ifndef mozilla_SandboxInfo_h
 #define mozilla_SandboxInfo_h
 
+#include "mozilla/Assertions.h"
 #include "mozilla/Types.h"
 #include <cstdint>
 
@@ -17,11 +18,18 @@ namespace mozilla {
 
 class SandboxInfo {
  public:
-  // No need to prevent copying; this is essentially just a const int.
-  SandboxInfo(const SandboxInfo& aOther) = default;
+  // Implicitly copy-constructible; this is essentially just an int or
+  // two so it doesn't matter.
 
-  // Flags are checked at initializer time; this returns them.
-  static const SandboxInfo& Get() { return sSingleton; }
+  // All processes, parent and child, must call this early in startup
+  // before any non-main threads are started (this will be asserted on
+  // debug builds).
+  static void Init() { sSingleton.InitThis(); }
+
+  static const SandboxInfo& Get() {
+    MOZ_ASSERT(sSingleton.mInited);
+    return sSingleton;
+  }
 
   enum Flags {
     // System call filtering; kernel config option CONFIG_SECCOMP_FILTER.
@@ -63,9 +71,15 @@ class SandboxInfo {
   uint32_t AsInteger() const { return mFlags; }
 
  private:
+  // Thread safety: these are written in Init(), which should be
+  // called when single-threaded, and only read afterwards.
   enum Flags mFlags;
-  static const MOZ_EXPORT SandboxInfo sSingleton;
-  SandboxInfo();
+  bool mInited = false;
+  static MOZ_EXPORT SandboxInfo sSingleton;
+
+  SandboxInfo() = default;
+
+  void MOZ_EXPORT InitThis();
 };
 
 }  // namespace mozilla

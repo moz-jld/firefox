@@ -5980,6 +5980,12 @@ int XREMain::XRE_main(int argc, char* argv[], const BootstrapConfig& aConfig) {
   NS_SetCurrentThreadName("MainThread");
 #endif
 
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+  // This needs to happen before any use of SandboxInfo, and while
+  // single-threaded (thus, before the profiler).
+  SandboxInfo::Init();
+#endif
+
   AUTO_BASE_PROFILER_LABEL("XREMain::XRE_main (around Gecko Profiler)", OTHER);
   AUTO_PROFILER_INIT;
   AUTO_PROFILER_LABEL("XREMain::XRE_main", OTHER);
