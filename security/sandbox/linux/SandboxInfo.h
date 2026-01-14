@@ -50,7 +50,8 @@ class SandboxInfo {
     kHasPrivilegedUserNamespaces = 1 << 6,
     // Env var MOZ_PERMISSIVE_CONTENT_SANDBOX
     kPermissive = 1 << 7,
-    // (1 << 8) was kUnexpectedThreads
+    // Something is creating threads when we need to still be single-threaded.
+    kUnexpectedThreads = 1 << 8,
     // MOZ_SANDBOX_LOGGING_FOR_TESTS
     kVerboseTests = 1 << 9,
   };

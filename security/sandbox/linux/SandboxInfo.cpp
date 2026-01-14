@@ -42,6 +42,21 @@
 
 namespace mozilla {
 
+static bool IsSingleThreaded() {
+  // This detects the thread count indirectly.  /proc/<pid>/task has a
+  // subdirectory for each thread in <pid>'s thread group, and the
+  // link count on the "task" directory follows Unix expectations: the
+  // link from its parent, the "." link from itself, and the ".." link
+  // from each subdirectory; thus, 2+N links for N threads.
+  struct stat sb;
+  if (stat("/proc/self/task", &sb) < 0) {
+    MOZ_DIAGNOSTIC_ASSERT(false, "Couldn't access /proc/self/task!");
+    return false;
+  }
+  MOZ_DIAGNOSTIC_ASSERT(sb.st_nlink >= 3);
+  return sb.st_nlink == 3;
+}
+
 static bool HasSeccompBPF() {
   // Allow simulating the absence of seccomp-bpf support, for testing.
   if (getenv("MOZ_FAKE_NO_SANDBOX")) {
@@ -224,6 +239,12 @@ void SandboxInfo::InitThis() {
   }
   if (getenv("MOZ_SANDBOX_LOGGING_FOR_TESTS")) {
     flags |= kVerboseTests;
+  }
+
+  bool singleThreaded = IsSingleThreaded();
+  MOZ_ASSERT(singleThreaded);
+  if (!singleThreaded) {
+    flags |= kUnexpectedThreads;
   }
 
   mFlags = static_cast<Flags>(flags);
