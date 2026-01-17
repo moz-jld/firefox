@@ -54,6 +54,8 @@ class SandboxInfo {
     kUnexpectedThreads = 1 << 8,
     // MOZ_SANDBOX_LOGGING_FOR_TESTS
     kVerboseTests = 1 << 9,
+    // Landlock LSM: https://docs.kernel.org/userspace-api/landlock.html
+    kLandlock = 1 << 10,
   };
 
   bool Test(Flags aFlag) const { return (mFlags & aFlag) == aFlag; }
@@ -71,10 +73,20 @@ class SandboxInfo {
   // For telemetry / crash annotation uses.
   uint32_t AsInteger() const { return mFlags; }
 
+  // Landlock ABI version (>=1) if supported by the kernel, otherwise 0.
+  //
+  // WARNING: always test kLandlock; if Landlock is supported but
+  // can't be used for some reason, the kLandlock bit will be clear
+  // but this will still return nonzero (to indicate that we could
+  // have used Landlock if that other condition weren't the case).
+  uint32_t LandlockABI() const { return mLandlockABI; }
+
  private:
   // Thread safety: these are written in Init(), which should be
   // called when single-threaded, and only read afterwards.
   enum Flags mFlags;
+  // This could a smaller type if needed.
+  uint32_t mLandlockABI = 0;
   bool mInited = false;
   static MOZ_EXPORT SandboxInfo sSingleton;
 

@@ -199,6 +199,18 @@ static bool CanCreateUserNamespace() {
   return true;
 }
 
+static uint32_t GetLandlockVersion() {
+  static constexpr uint32_t kLandlockCreateRulesetVersion = 1;
+  int rv = syscall(__NR_landlock_create_ruleset, nullptr, size_t(0),
+                   kLandlockCreateRulesetVersion);
+  if (rv < 0) {
+    MOZ_DIAGNOSTIC_ASSERT(errno == ENOSYS);
+    return 0;
+  }
+  MOZ_DIAGNOSTIC_ASSERT(rv > 0);
+  return ReleaseAssertedCast<uint32_t>(rv);
+}
+
 /* static */
 SandboxInfo SandboxInfo::sSingleton = {};
 
@@ -241,10 +253,20 @@ void SandboxInfo::InitThis() {
     flags |= kVerboseTests;
   }
 
+  mLandlockABI = GetLandlockVersion();
+  if (mLandlockABI) {
+    if (flags & kVerbose) {
+      SANDBOX_LOG("Landlock detected: ABI %d", mLandlockABI);
+    }
+    flags |= kLandlock;
+  }
+
   bool singleThreaded = IsSingleThreaded();
   MOZ_ASSERT(singleThreaded);
   if (!singleThreaded) {
+    SANDBOX_LOG("Unexpected threads!");
     flags |= kUnexpectedThreads;
+    flags &= ~kLandlock;
   }
 
   mFlags = static_cast<Flags>(flags);
