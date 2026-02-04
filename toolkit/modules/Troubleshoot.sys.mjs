@@ -1107,18 +1107,29 @@ if (AppConstants.MOZ_SANDBOX) {
   dataProviders.sandbox = function sandbox(done) {
     let data = {};
     if (AppConstants.unixstyle == "linux") {
-      const keys = [
-        "hasSeccompBPF",
-        "hasSeccompTSync",
-        "hasPrivilegedUserNamespaces",
-        "hasUserNamespaces",
-        "canSandboxContent",
-        "canSandboxMedia",
-      ];
+      const keys = {
+        hasSeccompBPF: "bool",
+        hasSeccompTSync: "bool",
+        hasPrivilegedUserNamespaces: "bool",
+        hasUserNamespaces: "bool",
+        canSandboxContent: "bool",
+        canSandboxMedia: "bool",
+        unexpectedThreads: "bool",
+        landlockABI: "uint32",
+      };
 
-      for (let key of keys) {
+      for (let key in keys) {
         if (Services.sysinfo.hasKey(key)) {
-          data[key] = Services.sysinfo.getPropertyAsBool(key);
+          switch (keys[key]) {
+            case "bool":
+              data[key] = Services.sysinfo.getPropertyAsBool(key);
+              break;
+            case "uint32":
+              data[key] = Services.sysinfo.getPropertyAsUint32(key);
+              break;
+            default:
+              throw new Error(`bad type ${keys[key]}`);
+          }
         }
       }
 

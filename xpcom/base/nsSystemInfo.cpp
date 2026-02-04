@@ -1794,6 +1794,8 @@ nsresult nsSystemInfo::Init() {
                     sandInfo.Test(SandboxInfo::kHasUserNamespaces));
   SetPropertyAsBool(u"hasPrivilegedUserNamespaces"_ns,
                     sandInfo.Test(SandboxInfo::kHasPrivilegedUserNamespaces));
+  SetPropertyAsBool(u"unexpectedThreads"_ns,
+                    sandInfo.Test(SandboxInfo::kUnexpectedThreads));
 
   if (sandInfo.Test(SandboxInfo::kEnabledForContent)) {
     SetPropertyAsBool(u"canSandboxContent"_ns, sandInfo.CanSandboxContent());
@@ -1802,6 +1804,8 @@ nsresult nsSystemInfo::Init() {
   if (sandInfo.Test(SandboxInfo::kEnabledForMedia)) {
     SetPropertyAsBool(u"canSandboxMedia"_ns, sandInfo.CanSandboxMedia());
   }
+
+  SetUint32Property(u"landlockABI"_ns, sandInfo.LandlockABI());
 #endif  // XP_LINUX && MOZ_SANDBOX
 
   return NS_OK;

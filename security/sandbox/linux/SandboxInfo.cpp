@@ -269,6 +269,10 @@ void SandboxInfo::InitThis() {
     flags &= ~kLandlock;
   }
 
+  // If in the future there are any other conditions where kLandlock
+  // is cleared while mLandlockABI is nonzero, consider exposing that
+  // flag separately in about:support.
+
   mFlags = static_cast<Flags>(flags);
   mInited = true;
 }

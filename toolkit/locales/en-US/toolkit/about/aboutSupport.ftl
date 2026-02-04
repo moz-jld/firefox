@@ -377,6 +377,9 @@ sandbox-proc-type-content = content
 sandbox-proc-type-file = file content
 sandbox-proc-type-media-plugin = media plugin
 sandbox-proc-type-data-decoder = data decoder
+# "Landlock" is a Linux kernel feature; consider leaving it untranslated
+landlock-abi = Landlock ABI
+unexpected-threads = Unexpected Multithreading
 
 startup-cache-title = Startup Cache
 startup-cache-disk-cache-path = Disk Cache Path

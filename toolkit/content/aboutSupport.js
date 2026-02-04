@@ -1512,25 +1512,32 @@ var snapshotFormatters = {
 
     let tbody = $("sandbox-tbody");
     for (let key in data) {
-      // Simplify the display a little in the common case.
-      if (
-        key === "hasPrivilegedUserNamespaces" &&
-        data[key] === data.hasUserNamespaces
-      ) {
-        continue;
-      }
-      if (key === "syscallLog") {
-        // Not in this table.
-        continue;
+      let value = data[key];
+      switch (key) {
+        case "hasPrivilegedUserNamespaces":
+          // Simplify the display a little in the common case.
+          if (value === data.hasUserNamespaces) {
+            continue;
+          }
+          break;
+        case "syscallLog":
+          // Displayed outside of this table.
+          continue;
+        case "unexpectedThreads":
+          // Only worth showing if it's true.
+          if (!value) {
+            continue;
+          }
+          break;
       }
       let keyStrId = toFluentID(key);
       let th = $.new("th", null, "column");
       document.l10n.setAttributes(th, keyStrId);
-      let td = $.new("td", data[key]);
+      let td = $.new("td", value);
       // Warning not applicable to Flatpak (see Bug 1882881), Snap or
       // any "Packaged App" (eg. Debian package)
       const isPackagedApp = Services.sysinfo.getPropertyAsBool("isPackagedApp");
-      if (key === "hasUserNamespaces" && !data[key] && !isPackagedApp) {
+      if (key === "hasUserNamespaces" && !value && !isPackagedApp) {
         td = $.new("td", "");
         td.classList.add("feature-unavailable");
         let span = document.createElement("span");
@@ -1538,7 +1545,7 @@ var snapshotFormatters = {
           span,
           "support-user-namespaces-unavailable",
           {
-            status: data[key],
+            status: value,
           }
         );
         let supportLink = document.createElement("a", {
