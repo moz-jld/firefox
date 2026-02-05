@@ -98,6 +98,7 @@
 
 #if defined(XP_LINUX) && defined(MOZ_SANDBOX)
 #  include "mozilla/Sandbox.h"
+#  include "mozilla/SandboxInfo.h"
 #endif
 
 #if defined(XP_LINUX)
@@ -584,6 +585,9 @@ nsresult XRE_InitChildProcess(int aArgc, char* aArgv[],
 
 #if defined(MOZ_SANDBOX)
       AddContentSandboxLevelAnnotation();
+#  ifdef XP_LINUX
+      mozilla::SandboxInfo::Get().CollectTelemetry();
+#  endif
 #endif
 
       // Run the UI event loop on the main thread.

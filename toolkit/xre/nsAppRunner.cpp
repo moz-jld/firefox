@@ -5877,7 +5877,7 @@ nsresult XREMain::XRE_mainRun() {
     // If we're on Linux, we now have information about the OS capabilities
     // available to us.
     SandboxInfo sandboxInfo = SandboxInfo::Get();
-    // If we need telemetry probes for sandboxInfo bits, they can go here.
+    sandboxInfo.CollectTelemetry();
 
     CrashReporter::RecordAnnotationU32(
         CrashReporter::Annotation::ContentSandboxCapabilities,

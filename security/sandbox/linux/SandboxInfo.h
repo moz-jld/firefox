@@ -81,6 +81,11 @@ class SandboxInfo {
   // have used Landlock if that other condition weren't the case).
   uint32_t LandlockABI() const { return mLandlockABI; }
 
+  // Defined in glue/SandboxTelemetryBridge.cpp to be able to call
+  // into Glean in libxul.  This should be called somewhat early in
+  // parent and child processes, but not too early for Glean to work.
+  void CollectTelemetry() const;
+
  private:
   // Thread safety: these are written in Init(), which should be
   // called when single-threaded, and only read afterwards.

@@ -85,3 +85,59 @@ sandbox:
     notification_emails:
       - bowen@mozilla.com
     expires: never
+
+  unexpected_threads_parent:
+    type: boolean
+    lifetime: application
+    description: |
+      Whether there were unexpected extra threads present at startup
+      in the parent process.  This can cause problems (mainly for
+      sandboxing, but also with the IPC fork server), and there are
+      known situations that can cause it to happen.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2014621
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2014621
+    notification_emails:
+      - jld@mozilla.com
+    data_sensitivity:
+      - technical
+    expires: 160
+
+  unexpected_threads_child:
+    type: counter
+    lifetime: application
+    description: |
+      The number of times a child process observed extra threads
+      present at startup.  This is effectively a fancy boolean: zero
+      if that didn't happen, nonzero if it did.  See also
+      unexpected_threads_parent.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2014621
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2014621
+    notification_emails:
+      - jld@mozilla.com
+    data_sensitivity:
+      - technical
+    expires: 160
+
+  suspicious_preloading:
+    type: quantity
+    unit: enum (see description)
+    lifetime: application
+    description: |
+      Whether there was something suspect about the contents of the
+      LD_PRELOAD environment variable which might be relevant to true
+      values of the unexpected_threads probes.  Currently defined
+      values: 0 = unset; 1 = set but not otherwise notable; 2 =
+      contains "libGL" as a substring.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2014621
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2014621
+    notification_emails:
+      - jld@mozilla.com
+    data_sensitivity:
+      - technical
+    expires: 160

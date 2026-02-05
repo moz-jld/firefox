@@ -8,6 +8,7 @@ UNIFIED_SOURCES += [
     "../SandboxLogging.cpp",
     "SandboxCrash.cpp",
     "SandboxPrefBridge.cpp",
+    "SandboxTelemetryBridge.cpp",
 ]
 
 SOURCES += [
