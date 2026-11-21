@@ -1118,6 +1118,12 @@ SandboxBrokerPolicyFactory::GetRDDPolicy(int aPid) {
 }
 
 /* static */ UniquePtr<SandboxBroker::Policy>
+SandboxBrokerPolicyFactory::GetGPUPolicy(int aPid) {
+  // FIXME this is not it, but hopefully it's not too far
+  return GetRDDPolicy(aPid);
+}
+
+/* static */ UniquePtr<SandboxBroker::Policy>
 SandboxBrokerPolicyFactory::GetUtilityProcessPolicy(int aPid) {
   auto policy = std::make_unique<SandboxBroker::Policy>();
 

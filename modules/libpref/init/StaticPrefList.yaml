@@ -19381,6 +19381,8 @@
   value: 2
 #elif defined(XP_MACOSX)
   value: 1
+#elif defined(XP_LINUX) && !defined(ANDROID)
+  value: 1
 #else
   value: 0
 #endif

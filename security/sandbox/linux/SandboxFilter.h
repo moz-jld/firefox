@@ -30,6 +30,9 @@ UniquePtr<sandbox::bpf_dsl::Policy> GetMediaSandboxPolicy(
 UniquePtr<sandbox::bpf_dsl::Policy> GetDecoderSandboxPolicy(
     SandboxBrokerClient* aMaybeBroker);
 
+UniquePtr<sandbox::bpf_dsl::Policy> GetGPUSandboxPolicy(
+    SandboxBrokerClient* aMaybeBroker);
+
 UniquePtr<sandbox::bpf_dsl::Policy> GetUtilitySandboxPolicy(
     SandboxBrokerClient* aMaybeBroker);
 

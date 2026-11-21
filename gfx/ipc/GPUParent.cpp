@@ -103,6 +103,11 @@
 #  include "mozilla/SandboxTestingChild.h"
 #endif
 
+#if defined(MOZ_SANDBOX) && defined(XP_LINUX)
+#  include "mozilla/Sandbox.h"
+#  include "mozilla/SandboxProfilerObserver.h"
+#endif
+
 namespace mozilla::gfx {
 
 using namespace ipc;
@@ -295,9 +300,19 @@ mozilla::ipc::IPCResult GPUParent::RecvInit(
     nsTArray<GfxVarUpdate>&& vars, const DevicePrefs& devicePrefs,
     nsTArray<LayerTreeIdMapping>&& aMappings,
     nsTArray<GfxInfoFeatureStatus>&& aFeatures, uint32_t aWrNamespace,
-    bool aDecodeVideo, InitResolver&& aInitResolver) {
+    bool aDecodeVideo, Maybe<FileDescriptor>&& aBrokerFd,
+    InitResolver&& aInitResolver) {
   mDecodeVideo = aDecodeVideo;
   gfxVars::ApplyUpdate(vars);
+
+#if defined(MOZ_SANDBOX) && defined(XP_LINUX)
+  RegisterProfilerObserversForSandboxProfiler();
+  if (aBrokerFd) {
+    SetGPUProcessSandbox(aBrokerFd->TakePlatformHandle().release());
+  }
+#else
+  MOZ_ASSERT(!aBrokerFd);
+#endif
 
   // Inherit device preferences.
   gfxConfig::Inherit(Feature::HW_COMPOSITING, devicePrefs.hwCompositing());

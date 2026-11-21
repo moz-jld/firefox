@@ -35,6 +35,12 @@
 #include "nsIObserverService.h"
 #include "nsIPropertyBag2.h"
 
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+#  include "mozilla/SandboxBroker.h"
+#  include "mozilla/SandboxBrokerPolicyFactory.h"
+#  include "mozilla/SandboxSettings.h"
+#endif
+
 namespace mozilla {
 namespace gfx {
 
@@ -68,10 +74,30 @@ RefPtr<GPUChild::InitPromiseType> GPUChild::Init() {
     features = gfxInfoRaw->GetAllFeatures();
   }
 
+  Maybe<ipc::FileDescriptor> brokerFd;
+
+#if defined(MOZ_SANDBOX) && defined(XP_LINUX)
+  if (IsGPUSandboxEnabled()) {
+    auto policy = SandboxBrokerPolicyFactory::GetGPUPolicy(OtherPid());
+    if (policy) {
+      brokerFd = Some(FileDescriptor());
+      mSandboxBroker = SandboxBroker::Create(std::move(policy), OtherPid(), brokerFd.ref());
+      // This is unlikely to fail, but could fail due to resource exhaustion.
+      // Attempt to bail out of the launch (FIXME is this right)
+      if (NS_WARN_IF(!mSandboxBroker)) {
+        // …uh, maybe the rejection type shouldn't be unit?
+        return GPUChild::InitPromiseType::CreateAndReject(Ok{}, __func__);
+      }
+      MOZ_ASSERT(brokerFd->IsValid());
+    }
+  }
+#endif
+
   RefPtr<InitPromiseType> promise =
       SendInit(updates, devicePrefs, mappings, features,
                GPUProcessManager::Get()->AllocateNamespace(),
-               GPUProcessManager::Get()->IsDecodingVideoOnGpuProcess())
+               GPUProcessManager::Get()->IsDecodingVideoOnGpuProcess(),
+               std::move(brokerFd))
           ->Then(
               GetCurrentSerialEventTarget(), __func__,
               [self = RefPtr{this}](GPUDeviceData&& aData) {

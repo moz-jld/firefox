@@ -64,6 +64,8 @@ MOZ_EXPORT void SetMediaPluginSandbox(const char* aFilePath);
 
 MOZ_EXPORT void SetRemoteDataDecoderSandbox(int aBroker);
 
+MOZ_EXPORT void SetGPUProcessSandbox(int aBroker);
+
 MOZ_EXPORT void SetUtilitySandbox(int aBroker, ipc::SandboxingKind aKind);
 
 // We want to turn on/off crashing on error when running some tests

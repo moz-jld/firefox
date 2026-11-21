@@ -169,6 +169,12 @@ int GetEffectiveGpuSandboxLevel() {
     return 0;
   }
 
+#ifdef XP_LINUX
+  if (!IsWaylandEnabled()) {
+    return 0;
+  }
+#endif
+
   return StaticPrefs::security_sandbox_gpu_level();
 }
 

@@ -796,6 +796,28 @@ void SetRemoteDataDecoderSandbox(int aBroker) {
   SetCurrentProcessSandbox(GetDecoderSandboxPolicy(sBroker));
 }
 
+void SetGPUProcessSandbox(int aBroker) {
+  if (!SandboxInfo::Get().Test(SandboxInfo::kHasSeccompBPF) ||
+      PR_GetEnv("MOZ_DISABLE_GPU_SANDBOX")) {
+    if (aBroker >= 0) {
+      close(aBroker);
+    }
+    return;
+  }
+
+  gSandboxReporterClient = new SandboxReporterClient(
+      SandboxReport::ProcType::GPU, TakeSandboxReporterFd());
+
+  // FIXME(bug 1513773): merge this with the one for content?
+  static SandboxBrokerClient* sBroker;
+  if (aBroker >= 0) {
+    sBroker = new SandboxBrokerClient(aBroker);
+  }
+
+  SetCurrentProcessSandbox(GetGPUSandboxPolicy(sBroker));
+}
+
+
 void SetUtilitySandbox(int aBroker, ipc::SandboxingKind aKind) {
   if (!SandboxInfo::Get().Test(SandboxInfo::kHasSeccompBPF) ||
       !IsUtilitySandboxEnabled(aKind)) {

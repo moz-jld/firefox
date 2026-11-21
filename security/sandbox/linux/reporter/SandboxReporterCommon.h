@@ -18,6 +18,8 @@ static const size_t kSandboxSyscallArguments = 6;
 // This struct represents a system call that was rejected by a
 // seccomp-bpf policy.
 struct SandboxReport {
+  // comment FIXME: it already does, because FILE?
+  //
   // In the future this may include finer distinctions than
   // GeckoProcessType -- e.g., whether a content process can load
   // file:/// URLs, or if it's reserved for content with certain
@@ -28,6 +30,7 @@ struct SandboxReport {
     MEDIA_PLUGIN,
     RDD,
     UTILITY,
+    GPU,
   };
 
   // The syscall number and arguments are usually `unsigned long`, but

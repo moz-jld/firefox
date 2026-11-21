@@ -139,6 +139,9 @@ static void SubmitToTelemetry(const SandboxReport& aReport) {
     case SandboxReport::ProcType::UTILITY:
       key.AppendLiteral("utility");
       break;
+    case SandboxReport::ProcType::GPU:
+      key.AppendLiteral("gpu");
+      break;
     default:
       MOZ_ASSERT(false);
   }

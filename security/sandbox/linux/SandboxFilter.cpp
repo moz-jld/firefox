@@ -1980,12 +1980,14 @@ UniquePtr<sandbox::bpf_dsl::Policy> GetMediaSandboxPolicy(
   return UniquePtr<sandbox::bpf_dsl::Policy>(new GMPSandboxPolicy(aFiles));
 }
 
+// FIXME this comment is embarrassingly stale
+//
 // The policy for the data decoder process is similar to the one for
 // media plugins, but the codec code is all in-tree so it's better
 // behaved and doesn't need special exceptions (or the ability to load
 // a plugin file).  However, it does directly create shared memory
 // segments, so it may need file brokering.
-class RDDSandboxPolicy final : public SandboxPolicyCommon {
+class RDDSandboxPolicy : public SandboxPolicyCommon {
 #ifdef MOZ_ENABLE_VULKAN_VIDEO
   static bool IsCudaUvmFdBindAddr(const sockaddr* aAddr, socklen_t aLen) {
     static constexpr char kPrefix[] = "cuda-uvmfd-";
@@ -2326,6 +2328,24 @@ UniquePtr<sandbox::bpf_dsl::Policy> GetDecoderSandboxPolicy(
     SandboxBrokerClient* aMaybeBroker) {
   return UniquePtr<sandbox::bpf_dsl::Policy>(
       new RDDSandboxPolicy(aMaybeBroker));
+}
+
+// FIXME temporary hack for proof-of-concept.
+//
+// Once I know what needs to happen, maybe there can be a GPUish superclass, or
+// just one class with dynamic options.  (Also I should disintegrate this file
+// into one per class or something so it's not hideous.  Or outline the worst of
+// the huge methods?  Or something?)
+class GPUSandboxPolicy : public RDDSandboxPolicy {
+ public:
+  explicit GPUSandboxPolicy(SandboxBrokerClient* aBroker)
+      : RDDSandboxPolicy(aBroker) { }
+};
+
+UniquePtr<sandbox::bpf_dsl::Policy> GetGPUSandboxPolicy(
+    SandboxBrokerClient* aMaybeBroker) {
+  return UniquePtr<sandbox::bpf_dsl::Policy>(
+      new GPUSandboxPolicy(aMaybeBroker));
 }
 
 class UtilitySandboxPolicy : public SandboxPolicyCommon {

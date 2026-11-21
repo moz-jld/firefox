@@ -12,6 +12,10 @@
 
 namespace mozilla {
 
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+class SandboxBroker;
+#endif
+
 namespace dom {
 class MemoryReportRequestHost;
 }  // namespace dom
@@ -111,6 +115,9 @@ class GPUChild final : public mozilla::ipc::CrashReporterHelper<GPUChild>,
 
   RefPtr<GPUProcessHost> mHost;
   UniquePtr<MemoryReportRequestHost> mMemoryReportRequest;
+#if defined(MOZ_SANDBOX) && defined(XP_LINUX)
+  RefPtr<SandboxBroker> mSandboxBroker;
+#endif
   bool mGPUReady;
   bool mUnexpectedShutdown = false;
   // Whether a paired minidump has already been generated, meaning we do not

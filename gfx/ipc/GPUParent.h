@@ -53,6 +53,7 @@ class GPUParent final : public PGPUParent {
                                    nsTArray<LayerTreeIdMapping>&& mappings,
                                    nsTArray<GfxInfoFeatureStatus>&& features,
                                    uint32_t wrNamespace, bool aDecodeVideo,
+                                   Maybe<ipc::FileDescriptor>&& aBrokerFd,
                                    InitResolver&& aInitResolver);
   mozilla::ipc::IPCResult RecvInitCompositorManager(
       Endpoint<PCompositorManagerParent>&& aEndpoint, uint32_t aNamespace);

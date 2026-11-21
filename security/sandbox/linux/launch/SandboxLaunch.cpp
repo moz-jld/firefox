@@ -270,6 +270,8 @@ static int GetEffectiveSandboxLevel(GeckoProcessType aType,
       return 0;
     case GeckoProcessType_RDD:
       return PR_GetEnv("MOZ_DISABLE_RDD_SANDBOX") == nullptr ? 1 : 0;
+    case GeckoProcessType_GPU:
+      return GetEffectiveGpuSandboxLevel();
     case GeckoProcessType_Utility:
       return IsUtilitySandboxEnabled(aKind);
     default:
@@ -342,6 +344,13 @@ bool SandboxLaunch::Configure(GeckoProcessType aType, SandboxingKind aKind,
       if (level >= 1) {
         canChroot = true;
         // Can't use CLONE_NEWIPC because of intel-media-driver.
+        flags |= CLONE_NEWNET;
+      }
+      break;
+    case GeckoProcessType_GPU:
+      if (level >= 1) {
+        canChroot = true;
+        flags |= CLONE_NEWIPC;
         flags |= CLONE_NEWNET;
       }
       break;
