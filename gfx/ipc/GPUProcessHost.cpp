@@ -22,6 +22,10 @@
 #if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
 #  include "mozilla/SandboxSettings.h"
 #endif
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+#  include "nsString.h"
+#  include "nsAppDirectoryServiceDefs.h"
+#endif
 #ifdef XP_WIN
 #  include <windows.h>
 #endif
@@ -54,6 +58,35 @@ GPUProcessHost::GPUProcessHost(Listener* aListener)
 
 GPUProcessHost::~GPUProcessHost() { MOZ_COUNT_DTOR(GPUProcessHost); }
 
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+/* static */ bool GPUProcessHost::GetCacheDir(nsACString& aPathOut,
+                                              bool aCreateDir) {
+  aPathOut.SetIsVoid(true);
+
+  nsCOMPtr<nsIFile> cacheDir;
+  nsresult rv = NS_GetSpecialDirectory(NS_APP_USER_PROFILE_LOCAL_50_DIR,
+                                       getter_AddRefs(cacheDir));
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return false;
+  }
+
+  rv = cacheDir->AppendNative("gpu-process-caches"_ns);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return false;
+  }
+
+  if (aCreateDir) {
+    rv = cacheDir->Create(nsIFile::DIRECTORY_TYPE, 0700);
+    if (rv != NS_ERROR_FILE_ALREADY_EXISTS && NS_WARN_IF(NS_FAILED(rv))) {
+      return false;
+    }
+  }
+
+  rv = cacheDir->GetNativePath(aPathOut);
+  return !NS_WARN_IF(NS_FAILED(rv));
+}
+#endif
+
 bool GPUProcessHost::Launch(geckoargs::ChildProcessArgs aExtraOpts) {
   MOZ_ASSERT(mLaunchPhase == LaunchPhase::Unlaunched);
   MOZ_ASSERT(!mGPUChild);
@@ -69,6 +102,14 @@ bool GPUProcessHost::Launch(geckoargs::ChildProcessArgs aExtraOpts) {
 
 #if defined(XP_WIN) && defined(MOZ_SANDBOX)
   mSandboxLevel = Preferences::GetInt("security.sandbox.gpu.level");
+#endif
+
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+  nsCString cachePath;
+  if (GetCacheDir(cachePath, /* create: */ true)) {
+    MOZ_ASSERT(!cachePath.IsEmpty());
+    mLaunchOptions->env_map["XDG_CACHE_HOME"] = cachePath.get();
+  }
 #endif
 
   mLaunchPhase = LaunchPhase::Waiting;

@@ -44,6 +44,7 @@
 #include "mozilla/StaticPrefs_security.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/UniquePtrExtensions.h"
+#include "mozilla/gfx/GPUProcessHost.h"
 #include "mozilla/ipc/SharedMemoryHandle.h"
 #include "nsAppDirectoryServiceDefs.h"
 #include "nsCharSeparatedTokenizer.h"
@@ -1119,8 +1120,17 @@ SandboxBrokerPolicyFactory::GetRDDPolicy(int aPid) {
 
 /* static */ UniquePtr<SandboxBroker::Policy>
 SandboxBrokerPolicyFactory::GetGPUPolicy(int aPid) {
-  // FIXME this is not it, but hopefully it's not too far
-  return GetRDDPolicy(aPid);
+  // FIXME: RDD should be factored out into "common GPU stuff" vs. media specific
+  auto policy = GetRDDPolicy(aPid);
+
+  nsCString cachePath;
+  if (gfx::GPUProcessHost::GetCacheDir(cachePath)) {
+    MOZ_ASSERT(!cachePath.IsEmpty());
+    policy->AddTree(rdwrcr, cachePath.get());
+    policy->AddAncestors(cachePath.get());
+  }
+
+  return policy;
 }
 
 /* static */ UniquePtr<SandboxBroker::Policy>

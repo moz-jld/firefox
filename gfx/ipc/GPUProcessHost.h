@@ -15,6 +15,11 @@
 #  include "mozilla/java/CompositorSurfaceManagerWrappers.h"
 #endif
 
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+// FIXME should this just be all desktop Linux / moz-widget-gtk?
+#  include "nsStringFwd.h"
+#endif
+
 namespace mozilla {
 namespace ipc {
 class SharedPreferenceSerializer;
@@ -126,6 +131,10 @@ class GPUProcessHost final : public mozilla::ipc::GeckoChildProcessHost {
 
 #if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
   static MacSandboxType GetMacSandboxType() { return MacSandboxType_GPU; };
+#endif
+
+#if defined(XP_LINUX) && defined(MOZ_SANDBOX)
+  static bool GetCacheDir(nsACString& aPathOut, bool aCreateDir = false);
 #endif
 
  private:

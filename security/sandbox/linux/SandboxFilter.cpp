@@ -2340,6 +2340,28 @@ class GPUSandboxPolicy : public RDDSandboxPolicy {
  public:
   explicit GPUSandboxPolicy(SandboxBrokerClient* aBroker)
       : RDDSandboxPolicy(aBroker) { }
+
+  ResultExpr EvaluateSyscall(int sysno) const override {
+    switch (sysno) {
+      // FIXME should this be a CASES_FOR macro, since it's also in content?
+      // (BTW this is for fontconfig cache)
+#  ifdef __NR_fadvise64
+      case __NR_fadvise64:
+        return Allow();
+#  endif
+
+#  ifdef __NR_fadvise64_64
+      case __NR_fadvise64_64:
+        return Allow();
+#  endif
+
+      case __NR_flock:    // mesa cache
+        return Allow();
+
+      default:
+        return RDDSandboxPolicy::EvaluateSyscall(sysno);
+    }
+  }
 };
 
 UniquePtr<sandbox::bpf_dsl::Policy> GetGPUSandboxPolicy(
